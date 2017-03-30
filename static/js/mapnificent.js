@@ -407,8 +407,11 @@ Mapnificent.prototype.drawTile = function() {
       'rgba(255,   0, 255, 0.6)', // 51 - 60 minutes
     ];
 
-    for (var i = 0; i < self.positions.length; i += 1) {
-      for (var timeLimit = 10 * 60; timeLimit < self.positions[i].time || timeLimit < 60 * 60; timeLimit += 10 * 60) {
+    var maxPositionTime = self.positions.reduce(function getMaxPositionTime (positionA, positionB) {
+      return Math.max(positionA, positionB);
+    }, 0);
+    for (var timeLimit = Math.min(maxPositionTime, 60 * 60); timeLimit > 0; timeLimit -= 10 * 60) {
+      for (var i = 0; i < self.positions.length; i += 1) {
         var drawStations = self.positions[i].getReachableStations(stationsAround, start, tileSize, timeLimit);
         for (var j = 0; j < drawStations.length; j += 1) {
           ctx.globalCompositeOperation = 'destination-out';
