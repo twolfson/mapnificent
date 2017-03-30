@@ -210,6 +210,7 @@ MapnificentPosition.prototype.getReachableStations = function(stationsAround, st
     return stations;
   }
 
+  var station;
   for (var i = 0; i < stationsAround.length; i += 1) {
     var stationTime = this.stationMap[stationsAround[i].id];
     if (stationTime === undefined || this.time > timeLimit || stationTime >= this.time) {
@@ -417,9 +418,10 @@ Mapnificent.prototype.drawTile = function() {
                   drawStations[j].r, 0, 2 * Math.PI, false);
           ctx.fill();
 
-          var distanceIndex = Math.floor(timeLimit / 60) - 1;
+          var distanceIndex = Math.floor(timeLimit / (10 * 60)) - 1;
           ctx.globalCompositeOperation = 'source-over';
           ctx.fillStyle = distances[distanceIndex];
+          console.log('hey', distances, distanceIndex, timeLimit);
           ctx.beginPath();
           ctx.arc(drawStations[j].x, drawStations[j].y,
                   drawStations[j].r, 0, 2 * Math.PI, false);
