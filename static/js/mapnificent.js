@@ -210,18 +210,12 @@ MapnificentPosition.prototype.getReachableStations = function(stationsAround, st
     return stations;
   }
 
-  // You start walking from your position
-  var station = convert(this.latlng, 0);
-  if (station !== null) {
-    stations.push(station);
-  }
-
   for (var i = 0; i < stationsAround.length; i += 1) {
     var stationTime = this.stationMap[stationsAround[i].id];
     if (stationTime === undefined || this.time > timeLimit || stationTime >= this.time) {
       continue;
     }
-console.log('hey', stationTime, this.time, timeLimit);
+
     station = convert(stationsAround[i], stationTime);
     if (station !== null) {
       stations.push(station);
@@ -403,22 +397,34 @@ Mapnificent.prototype.drawTile = function() {
     ctx.fillStyle = 'rgba(50,50,50,0.4)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    for (var i = 0; i < self.positions.length; i += 1) {
-      var drawStations = self.positions[i].getReachableStations(stationsAround, start, tileSize, 5 * 60);
-      for (var j = 0; j < drawStations.length; j += 1) {
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.fillStyle = 'rgba(0,0,0,1)';
-        ctx.beginPath();
-        ctx.arc(drawStations[j].x, drawStations[j].y,
-                drawStations[j].r, 0, 2 * Math.PI, false);
-        ctx.fill();
+    var distances = [
+      'rgba(255,   0,   0, 0.6)', //  0 - 10 minutes
+      'rgba(255, 255,   0, 0.6)', // 11 - 20 minutes
+      'rgba(  0, 255,   0, 0.6)', // 21 - 30 minutes
+      'rgba(  0, 255, 255, 0.6)', // 31 - 40 minutes
+      'rgba(  0,   0, 255, 0.6)', // 41 - 50 minutes
+      'rgba(255,   0, 255, 0.6)', // 51 - 60 minutes
+    ];
 
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = 'rgba(255,0,0,0.6)';
-        ctx.beginPath();
-        ctx.arc(drawStations[j].x, drawStations[j].y,
-                drawStations[j].r, 0, 2 * Math.PI, false);
-        ctx.fill();
+    for (var i = 0; i < self.positions.length; i += 1) {
+      for (var timeLimit = 10 * 60; timeLimit < self.positions[i].time || timeLimit < 60 * 60; timeLimit += 10 * 60) {
+        var drawStations = self.positions[i].getReachableStations(stationsAround, start, tileSize, timeLimit);
+        for (var j = 0; j < drawStations.length; j += 1) {
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.fillStyle = 'rgba(0,0,0,1)';
+          ctx.beginPath();
+          ctx.arc(drawStations[j].x, drawStations[j].y,
+                  drawStations[j].r, 0, 2 * Math.PI, false);
+          ctx.fill();
+
+          var distanceIndex = Math.floor(timeLimit / 60) - 1;
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.fillStyle = distances[distanceIndex];
+          ctx.beginPath();
+          ctx.arc(drawStations[j].x, drawStations[j].y,
+                  drawStations[j].r, 0, 2 * Math.PI, false);
+          ctx.fill();
+        }
       }
     }
   };
